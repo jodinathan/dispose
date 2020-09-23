@@ -63,7 +63,7 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   _StreamSubscription(this._delegate, this._cancel);
 }
 
-mixin Disposable {
+abstract class Disposable {
   final _subs = <StreamSubscription>{};
   final _uniqueSubs = <Symbol, StreamSubscription>{};
   final _ctrls = <StreamController>{};
