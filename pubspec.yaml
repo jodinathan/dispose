@@ -1,5 +1,6 @@
 name: dispose
 description: A handler to correctly dispose listeners, timers, controllers and etc.
+homepage: https://github.com/jodinathan/dispose
 version: 0.0.1
 
 environment:
