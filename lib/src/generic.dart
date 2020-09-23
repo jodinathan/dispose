@@ -11,15 +11,19 @@ class _Timer implements Timer {
   @override
   int get tick => delegate.tick;
 
-  @override
-  void cancel() {
-    delegate.cancel();
-
+  void _rem() {
     if (id == null) {
       _handler._timers.remove(this);
     } else {
       _handler._uniqueTimers.remove(id);
     }
+  }
+
+  @override
+  void cancel() {
+    delegate.cancel();
+
+    _rem();
   }
 
   _Timer(this._handler, this.delegate, this.id);
@@ -66,6 +70,13 @@ abstract class Disposable {
   final _timers = <_Timer>{};
   final _uniqueTimers = <Symbol, _Timer>{};
 
+  /**
+   * Listens and iterates through [stream] by calling [fn].
+   * The listener is disposed in the [dispose] function.
+   *
+   * If you add a [uniqueId], it means that whenever you call [each],
+   * we will make sure that clear any listener with the same [uniqueId].
+   */
   StreamSubscription<T> each<T extends Object>(Stream<T> stream,
       void Function(T item) fn,
       {Symbol? uniqueId}) {
@@ -136,13 +147,18 @@ abstract class Disposable {
 
   Timer timer(Duration duration, Function() fn,
       {Symbol? unique}) {
-    final tm = Timer(duration, fn);
+    late _Timer ret;
+    final tm = Timer(duration, () {
+      ret._rem();
+      fn();
+    });
+    ret = _timer(tm, unique: unique);
 
-    return _timer(tm, unique: unique);
+    return ret;
   }
-  Timer periodic(Duration duration, Function() fn,
+  Timer periodic(Duration duration, Function(Timer) fn,
       {Symbol? unique}) {
-    final tm = Timer.periodic(duration, (t) => fn());
+    final tm = Timer.periodic(duration, (t) => fn(t));
 
     return _timer(tm, unique: unique);
   }
