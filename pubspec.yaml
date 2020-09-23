@@ -1,0 +1,9 @@
+name: dispose
+description: A handler to correctly dispose listeners, timers, controllers and etc.
+version: 0.0.1
+
+environment:
+  sdk: '>= 2.9.0 < 3.0.0'
+
+dependencies:
+  angular: ^5.3.1

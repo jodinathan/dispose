@@ -1,0 +1,5 @@
+include: package:oni_common/analysis_options.yaml
+
+analyzer:
+  enable-experiment:
+    - non-nullable
