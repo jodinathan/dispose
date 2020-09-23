@@ -153,33 +153,41 @@ abstract class Disposable {
   }
 
   /// Creates a [Timer] that gets cancelled within [dispose] if not executed.
+  ///
+  /// Set [uniqueId] to some [Symbol] to make this timer unique.
+  /// This means that we will cancel the previous timer with same symbol
+  /// before assigning a new one.
   Timer timer(Duration duration, Function() fn,
-      {Symbol? unique}) {
+      {Symbol? uniqueId}) {
     late _Timer ret;
     final tm = Timer(duration, () {
       ret._rem();
       fn();
     });
-    ret = _timer(tm, unique: unique);
+    ret = _timer(tm, uniqueId: uniqueId);
 
     return ret;
   }
 
   /// Creates a periodic [Timer.periodic] that gets cancelled within [dispose].
+  ///
+  /// Set [uniqueId] to some [Symbol] to make this timer unique.
+  /// This means that we will cancel the previous timer with same symbol
+  /// before assigning a new one.
   Timer periodic(Duration duration, Function(Timer) fn,
-      {Symbol? unique}) {
+      {Symbol? uniqueId}) {
     final tm = Timer.periodic(duration, (t) => fn(t));
 
-    return _timer(tm, unique: unique);
+    return _timer(tm, uniqueId: uniqueId);
   }
 
   _Timer _timer(Timer tm,
-      {Symbol? unique}) {
-    final ret = _Timer(this, tm, unique);
+      {Symbol? uniqueId}) {
+    final ret = _Timer(this, tm, uniqueId);
 
-    if (unique != null) {
-      _uniqueTimers[unique]?.cancel();
-      _uniqueTimers[unique] = ret;
+    if (uniqueId != null) {
+      _uniqueTimers[uniqueId]?.cancel();
+      _uniqueTimers[uniqueId] = ret;
     } else {
       _timers.add(ret);
     }
