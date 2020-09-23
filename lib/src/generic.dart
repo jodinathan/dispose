@@ -63,7 +63,7 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   _StreamSubscription(this._delegate, this._cancel);
 }
 
-abstract class Disposable {
+mixin Disposable {
   final _subs = <StreamSubscription>{};
   final _uniqueSubs = <Symbol, StreamSubscription>{};
   final _ctrls = <StreamController>{};
@@ -96,6 +96,10 @@ abstract class Disposable {
     return ret;
   }
 
+  /// Creates a [StreamController] that is closed within [dispose].
+  ///
+  /// Set [broadcast] to true if you need a
+  /// broadcasting controller as in [StreamController.broadcast].
   StreamController<T> controller<T extends Object>({bool broadcast = false}) {
     StreamController<T> ret;
 
@@ -114,8 +118,13 @@ abstract class Disposable {
     return ret;
   }
 
+  /// Cancel all active listeners, timers and close the controllers.
+  /// You should not use this class after it's disposal.
+  /// If you only want to cancel/clear stuff, use [cancelBindings].
   Future<void> dispose() => cancelBindings();
 
+  /// Cancel all active listeners, timers and close the controllers.
+  /// [dispose] calls this function internally.
   Future<void> cancelBindings() async {
     for (final s in _subs.toList()) {
       await s.cancel();
@@ -143,6 +152,7 @@ abstract class Disposable {
     assert(_uniqueTimers.isEmpty);
   }
 
+  /// Creates a [Timer] that gets cancelled within [dispose] if not executed.
   Timer timer(Duration duration, Function() fn,
       {Symbol? unique}) {
     late _Timer ret;
@@ -154,6 +164,8 @@ abstract class Disposable {
 
     return ret;
   }
+
+  /// Creates a periodic [Timer.periodic] that gets cancelled within [dispose].
   Timer periodic(Duration duration, Function(Timer) fn,
       {Symbol? unique}) {
     final tm = Timer.periodic(duration, (t) => fn(t));
