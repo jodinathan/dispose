@@ -70,13 +70,11 @@ abstract class Disposable {
   final _timers = <_Timer>{};
   final _uniqueTimers = <Symbol, _Timer>{};
 
-  /**
-   * Listens and iterates through [stream] by calling [fn].
-   * The listener is disposed in the [dispose] function.
-   *
-   * If you add a [uniqueId], it means that whenever you call [each],
-   * we will make sure that clear any listener with the same [uniqueId].
-   */
+  /// Listens and iterates through [stream] by calling [fn].
+  /// The listener is disposed in the [dispose] function.
+  ///
+  /// If you add a [uniqueId], it means that whenever you call [each],
+  /// we will make sure that clear any listener with the same [uniqueId].
   StreamSubscription<T> each<T extends Object>(Stream<T> stream,
       void Function(T item) fn,
       {Symbol? uniqueId}) {

@@ -1,4 +1,4 @@
-include: package:oni_common/analysis_options.yaml
+include: package:pedantic/analysis_options.yaml
 
 analyzer:
   enable-experiment:
