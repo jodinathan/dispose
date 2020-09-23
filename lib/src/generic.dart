@@ -3,7 +3,7 @@ import 'dart:async';
 class _Timer implements Timer {
   final Timer delegate;
   final Disposable _handler;
-  final Symbol? id;
+  final Symbol/*?*/ id;
 
   @override
   bool get isActive => delegate.isActive;
@@ -40,16 +40,16 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   }
 
   @override
-  void onData(void Function(T)? handleData) => _delegate.onData(handleData);
+  void onData(void Function(T)/*?*/ handleData) => _delegate.onData(handleData);
 
   @override
-  void onError(Function? handleError) => _delegate.onError(handleError);
+  void onError(Function/*?*/ handleError) => _delegate.onError(handleError);
 
   @override
-  void onDone(void Function()? handleDone) => _delegate.onDone(handleDone);
+  void onDone(void Function()/*?*/ handleDone) => _delegate.onDone(handleDone);
 
   @override
-  void pause([Future<void>? resumeSignal]) => _delegate.pause(resumeSignal);
+  void pause([Future<void>/*?*/ resumeSignal]) => _delegate.pause(resumeSignal);
 
   @override
   void resume() => _delegate.resume();
@@ -58,7 +58,7 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _delegate.isPaused;
 
   @override
-  Future<E> asFuture<E>([E? futureValue]) => _delegate.asFuture(futureValue);
+  Future<E> asFuture<E>([E/*?*/ futureValue]) => _delegate.asFuture(futureValue);
 
   _StreamSubscription(this._delegate, this._cancel);
 }
@@ -77,8 +77,8 @@ abstract class Disposable {
   /// we will make sure that clear any listener with the same [uniqueId].
   StreamSubscription<T> each<T extends Object>(Stream<T> stream,
       void Function(T item) fn,
-      {Symbol? uniqueId}) {
-    late StreamSubscription<T> ret;
+      {Symbol/*?*/ uniqueId}) {
+    /*late*/ StreamSubscription<T> ret;
 
     if (uniqueId == null) {
       ret = _StreamSubscription(stream.listen(fn),
@@ -158,8 +158,8 @@ abstract class Disposable {
   /// This means that we will cancel the previous timer with same symbol
   /// before assigning a new one.
   Timer timer(Duration duration, Function() fn,
-      {Symbol? uniqueId}) {
-    late _Timer ret;
+      {Symbol/*?*/ uniqueId}) {
+    /*late*/ _Timer ret;
     final tm = Timer(duration, () {
       ret._rem();
       fn();
@@ -175,14 +175,14 @@ abstract class Disposable {
   /// This means that we will cancel the previous timer with same symbol
   /// before assigning a new one.
   Timer periodic(Duration duration, Function(Timer) fn,
-      {Symbol? uniqueId}) {
+      {Symbol/*?*/ uniqueId}) {
     final tm = Timer.periodic(duration, (t) => fn(t));
 
     return _timer(tm, uniqueId: uniqueId);
   }
 
   _Timer _timer(Timer tm,
-      {Symbol? uniqueId}) {
+      {Symbol/*?*/ uniqueId}) {
     final ret = _Timer(this, tm, uniqueId);
 
     if (uniqueId != null) {
