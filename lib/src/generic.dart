@@ -29,7 +29,7 @@ class _Timer implements Timer {
   _Timer(this._handler, this.delegate, this.id);
 }
 
-class _StreamSubscription<T> implements StreamSubscription<T> {
+class ControlledStreamSubscription<T> implements StreamSubscription<T> {
   final StreamSubscription<T> _delegate;
   final void Function() _cancel;
 
@@ -40,16 +40,20 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   }
 
   @override
-  void onData(void Function(T)/*?*/ handleData) => _delegate.onData(handleData);
+  void onData(void Function(T)/*?*/ handleData) =>
+      _delegate.onData(handleData);
 
   @override
-  void onError(Function/*?*/ handleError) => _delegate.onError(handleError);
+  void onError(Function/*?*/ handleError) =>
+      _delegate.onError(handleError);
 
   @override
-  void onDone(void Function()/*?*/ handleDone) => _delegate.onDone(handleDone);
+  void onDone(void Function()/*?*/ handleDone) =>
+      _delegate.onDone(handleDone);
 
   @override
-  void pause([Future<void>/*?*/ resumeSignal]) => _delegate.pause(resumeSignal);
+  void pause([Future<void>/*?*/ resumeSignal]) =>
+      _delegate.pause(resumeSignal);
 
   @override
   void resume() => _delegate.resume();
@@ -58,9 +62,10 @@ class _StreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _delegate.isPaused;
 
   @override
-  Future<E> asFuture<E>([E/*?*/ futureValue]) => _delegate.asFuture(futureValue);
+  Future<E> asFuture<E>([E/*?*/ futureValue]) =>
+      _delegate.asFuture(futureValue);
 
-  _StreamSubscription(this._delegate, this._cancel);
+  ControlledStreamSubscription(this._delegate, this._cancel);
 }
 
 abstract class Disposable {
@@ -69,6 +74,8 @@ abstract class Disposable {
   final _ctrls = <StreamController>{};
   final _timers = <_Timer>{};
   final _uniqueTimers = <Symbol, _Timer>{};
+  final _disposables = <Disposable>{};
+  Disposable _parent;
 
   /// Listens and iterates through [stream] by calling [fn].
   /// The listener is disposed in the [dispose] function.
@@ -81,11 +88,11 @@ abstract class Disposable {
     /*late*/ StreamSubscription<T> ret;
 
     if (uniqueId == null) {
-      ret = _StreamSubscription(stream.listen(fn),
+      ret = ControlledStreamSubscription(stream.listen(fn),
               () => _subs.remove(ret));
       _subs.add(ret);
     } else {
-      ret = _StreamSubscription(stream.listen(fn),
+      ret = ControlledStreamSubscription(stream.listen(fn),
               () => _uniqueSubs.remove(uniqueId));
 
       _uniqueSubs[uniqueId]?.cancel();
@@ -100,30 +107,53 @@ abstract class Disposable {
   ///
   /// Set [broadcast] to true if you need a
   /// broadcasting controller as in [StreamController.broadcast].
-  StreamController<T> controller<T extends Object>({bool broadcast = false}) {
+  StreamController<T> controller<T extends Object>({
+    bool broadcast = false,
+    FutureOr<void> Function() onCancel/*?*/
+  }) {
     StreamController<T> ret;
 
     if (broadcast) {
-      ret = StreamController<T>.broadcast();
+      ret = StreamController<T>.broadcast(onCancel: onCancel);
     } else {
-      ret = StreamController<T>();
+      ret = StreamController<T>(onCancel: onCancel);
     }
+    ret.done.then((ev) => _ctrls.remove(ret));
 
     _ctrls.add(ret);
-
-    ret.onCancel = () {
-      _ctrls.remove(ret);
-    };
 
     return ret;
   }
 
-  /// Cancel all active listeners, timers and close the controllers.
+  /// Binds another [Disposable] object to be disposed when this
+  /// is disposed.
+  void disposable(Disposable disposable) {
+    disposable._parent = this;
+    _disposables.add(disposable);
+  }
+
+  /// Cancel all active listeners, timers, close the controllers
+  /// and disposes other disposables bound with [bind].
+  ///
   /// You should not use this class after it's disposal.
   /// If you only want to cancel/clear stuff, use [cancelBindings].
-  Future<void> dispose() => cancelBindings();
+  Future<void> dispose() async {
+    if (_parent != null) {
+      _parent._disposables.remove(this);
+    }
+
+    for (var disposable in _disposables.toList()) {
+      await disposable.dispose();
+    }
+
+    assert(_disposables.isEmpty);
+
+    await cancelBindings(); // 15 9 9134 9888
+  }
 
   /// Cancel all active listeners, timers and close the controllers.
+  /// This *does not* dispose other disposables bound with [bind].
+  ///
   /// [dispose] calls this function internally.
   Future<void> cancelBindings() async {
     for (final s in _subs.toList()) {
