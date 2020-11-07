@@ -10,3 +10,6 @@ Removed the NNBD stuff for now.
 # 0.0.4
 Added the disposable method. 
 It enables adding disposable objects to be disposed within another Disposable object.
+
+# 0.0.5
+Some minor bug fixes
