@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'interval.dart';
+
 class _Timer implements Timer {
   final Timer delegate;
   final Disposable _handler;
@@ -209,6 +211,26 @@ abstract class Disposable {
     final tm = Timer.periodic(duration, (t) => fn(t));
 
     return _timer(tm, uniqueId: uniqueId);
+  }
+
+  Timer interval(Duration duration, Function() fn,
+      {Symbol/*?*/ uniqueId, bool execNow = true}) {
+    final tm = IntervalTimer(fn, duration, execNow: execNow);
+
+    return _timer(tm, uniqueId: uniqueId);
+  }
+
+  StreamedIntervalTimer streamedInterval<T, E>(Stream<T> valueStream,
+      Duration duration, Function(T) fn, {Symbol/*?*/ uniqueId}) {
+    final tm = StreamedIntervalTimer(fn, duration, execNow: true);
+
+    each<T>(valueStream, (ev) {
+      tm.add(ev);
+    });
+
+    _timer(tm, uniqueId: uniqueId);
+
+    return tm;
   }
 
   _Timer _timer(Timer tm,
