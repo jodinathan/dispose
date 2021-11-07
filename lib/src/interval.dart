@@ -1,9 +1,9 @@
 import 'dart:async';
 
 class IntervalTimer implements Timer {
-  final FutureOr<void> Function() fn;
+  final FutureOr<void> Function()? fn;
   final Duration duration;
-  bool _open;
+  late bool _open;
   @override
   bool get isActive => _open;
   int _tick = 0;
@@ -12,7 +12,7 @@ class IntervalTimer implements Timer {
 
   void _exec() async {
     if (_open) {
-      await fn();
+      await fn!();
       _tick++;
 
       Timer(duration, _exec);
@@ -42,10 +42,10 @@ class IntervalTimer implements Timer {
 }
 
 class StreamedIntervalTimer<T> extends IntervalTimer {
-  T _obj;
+  T? _obj;
 
   @override
-  FutureOr<void> Function() fn;
+  FutureOr<void> Function()? fn;
 
   void add(T item) {
     _obj = item;
@@ -55,7 +55,7 @@ class StreamedIntervalTimer<T> extends IntervalTimer {
     _obj = null;
   }
 
-  StreamedIntervalTimer(FutureOr<void> Function(T) func,
+  StreamedIntervalTimer(FutureOr<void> Function(T?) func,
       Duration duration, {bool execNow = true}):
       super(null, duration, execNow: false) {
     fn = () {

@@ -5,7 +5,7 @@ import 'interval.dart';
 class _Timer implements Timer {
   final Timer delegate;
   final Disposable _handler;
-  final Symbol/*?*/ id;
+  final Symbol? id;
 
   @override
   bool get isActive => delegate.isActive;
@@ -42,19 +42,19 @@ class ControlledStreamSubscription<T> implements StreamSubscription<T> {
   }
 
   @override
-  void onData(void Function(T)/*?*/ handleData) =>
+  void onData(void Function(T)? handleData) =>
       _delegate.onData(handleData);
 
   @override
-  void onError(Function/*?*/ handleError) =>
+  void onError(Function? handleError) =>
       _delegate.onError(handleError);
 
   @override
-  void onDone(void Function()/*?*/ handleDone) =>
+  void onDone(void Function()? handleDone) =>
       _delegate.onDone(handleDone);
 
   @override
-  void pause([Future<void>/*?*/ resumeSignal]) =>
+  void pause([Future<void>? resumeSignal]) =>
       _delegate.pause(resumeSignal);
 
   @override
@@ -64,7 +64,7 @@ class ControlledStreamSubscription<T> implements StreamSubscription<T> {
   bool get isPaused => _delegate.isPaused;
 
   @override
-  Future<E> asFuture<E>([E/*?*/ futureValue]) =>
+  Future<E> asFuture<E>([E? futureValue]) =>
       _delegate.asFuture(futureValue);
 
   ControlledStreamSubscription(this._delegate, this._cancel);
@@ -77,17 +77,17 @@ abstract class Disposable {
   final _timers = <_Timer>{};
   final _uniqueTimers = <Symbol, _Timer>{};
   final _disposables = <Disposable>{};
-  Disposable _parent;
+  Disposable? _parent;
 
   /// Listens and iterates through [stream] by calling [fn].
   /// The listener is disposed in the [dispose] function.
   ///
   /// If you add a [uniqueId], it means that whenever you call [each],
   /// we will make sure that clear any listener with the same [uniqueId].
-  StreamSubscription<T> each<T extends Object>(Stream<T> stream,
+  StreamSubscription<T> each<T extends Object?>(Stream<T> stream,
       void Function(T item) fn,
-      {Symbol/*?*/ uniqueId}) {
-    /*late*/ StreamSubscription<T> ret;
+      {Symbol? uniqueId}) {
+    late StreamSubscription<T> ret;
 
     if (uniqueId == null) {
       ret = ControlledStreamSubscription(stream.listen(fn),
@@ -111,7 +111,7 @@ abstract class Disposable {
   /// broadcasting controller as in [StreamController.broadcast].
   StreamController<T> controller<T extends Object>({
     bool broadcast = false,
-    FutureOr<void> Function() onCancel/*?*/
+    FutureOr<void> Function()? onCancel/*?*/
   }) {
     StreamController<T> ret;
 
@@ -141,7 +141,7 @@ abstract class Disposable {
   /// If you only want to cancel/clear stuff, use [cancelBindings].
   Future<void> dispose() async {
     if (_parent != null) {
-      _parent._disposables.remove(this);
+      _parent!._disposables.remove(this);
     }
 
     for (var disposable in _disposables.toList()) {
@@ -190,8 +190,8 @@ abstract class Disposable {
   /// This means that we will cancel the previous timer with same symbol
   /// before assigning a new one.
   Timer timer(Duration duration, Function() fn,
-      {Symbol/*?*/ uniqueId}) {
-    /*late*/ _Timer ret;
+      {Symbol? uniqueId}) {
+    late _Timer ret;
     final tm = Timer(duration, () {
       ret._rem();
       fn();
@@ -207,21 +207,21 @@ abstract class Disposable {
   /// This means that we will cancel the previous timer with same symbol
   /// before assigning a new one.
   Timer periodic(Duration duration, Function(Timer) fn,
-      {Symbol/*?*/ uniqueId}) {
+      {Symbol? uniqueId}) {
     final tm = Timer.periodic(duration, (t) => fn(t));
 
     return _timer(tm, uniqueId: uniqueId);
   }
 
   Timer interval(Duration duration, Function() fn,
-      {Symbol/*?*/ uniqueId, bool execNow = true}) {
+      {Symbol? uniqueId, bool execNow = true}) {
     final tm = IntervalTimer(fn, duration, execNow: execNow);
 
     return _timer(tm, uniqueId: uniqueId);
   }
 
   StreamedIntervalTimer streamedInterval<T, E>(Stream<T> valueStream,
-      Duration duration, Function(T) fn, {Symbol/*?*/ uniqueId}) {
+      Duration duration, Function(T?) fn, {Symbol? uniqueId}) {
     final tm = StreamedIntervalTimer(fn, duration, execNow: true);
 
     each<T>(valueStream, (ev) {
@@ -234,7 +234,7 @@ abstract class Disposable {
   }
 
   _Timer _timer(Timer tm,
-      {Symbol/*?*/ uniqueId}) {
+      {Symbol? uniqueId}) {
     final ret = _Timer(this, tm, uniqueId);
 
     if (uniqueId != null) {
