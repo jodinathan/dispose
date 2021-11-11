@@ -1,3 +1,6 @@
+# 0.0.7
+Removed the `Object` in favor of `dynamic`. 
+
 # 0.0.6
 NNBD automatic migration
 
