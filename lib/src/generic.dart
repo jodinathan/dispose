@@ -84,7 +84,7 @@ abstract class Disposable {
   ///
   /// If you add a [uniqueId], it means that whenever you call [each],
   /// we will make sure that clear any listener with the same [uniqueId].
-  StreamSubscription<T> each<T extends Object?>(Stream<T> stream,
+  StreamSubscription<T> each<T>(Stream<T> stream,
       void Function(T item) fn,
       {Symbol? uniqueId}) {
     late StreamSubscription<T> ret;
@@ -109,7 +109,7 @@ abstract class Disposable {
   ///
   /// Set [broadcast] to true if you need a
   /// broadcasting controller as in [StreamController.broadcast].
-  StreamController<T> controller<T extends Object>({
+  StreamController<T> controller<T>({
     bool broadcast = false,
     FutureOr<void> Function()? onCancel/*?*/
   }) {
