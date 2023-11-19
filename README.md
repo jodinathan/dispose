@@ -95,3 +95,6 @@ class SomeClass extends Disposable {
   }
 }  
 ```
+
+# cancelBind & cancelTimer  
+Use these methods to cancel unique bindings and timers.
