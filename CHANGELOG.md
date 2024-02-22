@@ -1,3 +1,9 @@
+# 0.0.9+1
+- Bumped ngdart version
+
+# 0.0.9
+- Added notification bindings sugar
+
 # 0.0.8
 - Added `cancelBind` and `cancelTimer` that cancel unique bindings and timers.  
 - Added `reusable` method that creates an instance of `Disposable` so you can create bindings, 
